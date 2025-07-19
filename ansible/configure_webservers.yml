@@ -1,0 +1,15 @@
+- name: Install and configure NGINX on web hosts
+  hosts: web
+  become: true
+  tasks:
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Ensure NGINX is running and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: true
