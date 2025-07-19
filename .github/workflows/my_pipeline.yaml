@@ -34,7 +34,7 @@ jobs:
       - name: Configure AWS credentials (Use Open ID Connect)
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          role-to-assume: arn:aws:iam::975050221465:role/msd-tech-assignment-aws-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/msd-tech-assignment-aws-role
           aws-region: ap-south-1
 
       - name: Terraform Init
