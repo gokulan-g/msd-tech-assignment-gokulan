@@ -80,9 +80,6 @@ jobs:
           sudo ansible --version
           sudo ansible-galaxy --version
 
-      - name: Install required Ansible collections
-        run: ansible-galaxy collection install -r ansible/requirements.yml
-        
       - name: Run Ansible Playbook
         run: ansible-playbook ansible/main.yml
 
