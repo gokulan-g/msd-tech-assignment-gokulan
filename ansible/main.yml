@@ -8,10 +8,10 @@
     # inventory_dir: "../ansible"
 
   tasks:
-    - name: Ensure previous ansible/inventories.ini is deleted
-      ansible.builtin.file:
-        path: "{{ inventory_path }}"
-        state: absent
+    # - name: Ensure previous ansible/inventories.ini is deleted
+    #   ansible.builtin.file:
+    #     path: "{{ inventory_path }}"
+    #     state: absent
 
     - name: Read terraform.tfstate
       slurp:
