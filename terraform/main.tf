@@ -1,7 +1,3 @@
-provider "aws" {
-  region = "ap-south-1" # Mumbai region. Local to Me
-}
-
 # Fetch the most recent Ubuntu AMI from Canonical
 data "aws_ami" "ubuntu" {
   most_recent = true
