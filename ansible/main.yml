@@ -8,19 +8,6 @@
     # inventory_dir: "../ansible"
 
   tasks:
-    - name: print the file
-      command: ls 
-      register: op
-      
-    - debug:
-        var: op
-        
-    # - name: Ensure inventory directory exists
-    #   file:
-    #     path: "{{ inventory_dir }}"
-    #     state: directory
-    #     mode: '0755'
-
     - name: Read terraform.tfstate
       slurp:
         src: "{{ tfstate_path }}"
@@ -49,3 +36,19 @@
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }}
           {% endfor %}
+
+- name: Install and configure NGINX on web hosts
+  hosts: web
+  become: true
+  tasks:
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Ensure NGINX is running and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: true
