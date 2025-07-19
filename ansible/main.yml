@@ -39,7 +39,7 @@
         content: |
           [web]
           {% for inst in named_instances %}
-          {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }}
+          {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           {% endfor %}
 
     - name: show file
