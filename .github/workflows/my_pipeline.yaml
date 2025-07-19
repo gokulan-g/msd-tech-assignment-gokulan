@@ -22,18 +22,20 @@ jobs:
       - name: Show Terraform version
         run: terraform -version
 
-      - name: Install Ansible
-        run: |
-          sudo apt update
-          sudo apt install -y ansible
+      # - name: Install Ansible
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install -y ansible
 
-      - name: Show Ansible version
-        run: ansible --version
+      # - name: Show Ansible version
+      #   run: ansible --version
 
       - name: Configure AWS credentials (Use Open ID Connect)
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           role-to-assume: arn:aws:iam::975050221465:role/msd-tech-assignment-aws-role
+          aws-region: ap-south-1
+          
 
       - name: Apply Terraform
         working-directory: ./terraform
