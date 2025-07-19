@@ -91,8 +91,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/msd_assignment_key.pem
           chmod 600 ~/.ssh/msd_assignment_key.pem
+
+      - name: Run Ansible Playbook - create inventories.ini file
+        run: |
+          ansible-playbook ansible/main.yml
           
-      - name: Run Ansible Playbook
+      - name: Run Ansible Playbook - install webservers from inventories.ini file
         run: |
           ansible-playbook ansible/main.yml -i ansible/inventories.ini \
             --private-key ~/.ssh/msd_assignment_key.pem
