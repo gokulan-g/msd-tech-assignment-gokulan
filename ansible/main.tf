@@ -28,9 +28,9 @@
       debug:
         msg: "{{ instances_info }}"
     
-    - name: Write inventory.ini file
+    - name: Write inventories.ini file
       copy:
-        dest: "ansible/inventory.ini"
+        dest: "ansible/inventories.ini"
         content: |
           [webservers]
           {% for ip, dns in instances_info %}
