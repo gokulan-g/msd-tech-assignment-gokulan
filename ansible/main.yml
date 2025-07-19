@@ -8,7 +8,7 @@
   tasks:
     - name: Read terraform state
       set_fact:
-        tf_instances: "{{ lookup('community.general.terraform_state', tfstate_file).resources }}"
+        tf_instances: "{{ lookup('cloud.terraform.terraform_state', tfstate_file).resources }}"
     
     - name: Extract public IPs and hostnames from aws_instance resources
       set_fact:
