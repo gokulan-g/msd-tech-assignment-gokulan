@@ -8,13 +8,18 @@
     # inventory_dir: "../ansible"
 
   tasks:
+    - name: Ensure previous ansible/inventories.ini is deleted
+      ansible.builtin.file:
+        path: "{{ inventory_path }}"
+        state: absent
+
     - name: Read terraform.tfstate
       slurp:
         src: "{{ tfstate_path }}"
       register: raw_tfstate
 
     - name: Parse tfstate JSON
-      set_fact:
+      ansible.builtin.set_fact:
         tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
 
     - name: Extract EC2 instances with 'Name' tag
