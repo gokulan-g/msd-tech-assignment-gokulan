@@ -5,7 +5,6 @@
   vars:
     tfstate_path: "../terraform/terraform.tfstate"
     inventory_path: "./inventories.ini"
-    # inventory_dir: "../ansible"
 
   tasks:
     - name: Ensure previous ansible/inventories.ini is deleted
@@ -37,15 +36,7 @@
       copy:
         dest: "{{ inventory_path }}"
         content: |
-          [web]
+          [webservers]
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           {% endfor %}
-
-    - name: show file
-      command: ls 
-      register: op
-
-    - name: show file
-      debug:
-        var: op
