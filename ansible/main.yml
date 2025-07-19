@@ -41,3 +41,11 @@
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }}
           {% endfor %}
+
+    - name: show file
+      command: ls 
+      register: op
+
+    - name: show file
+      debug:
+        var: op
