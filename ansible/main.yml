@@ -8,10 +8,10 @@
     # inventory_dir: "../ansible"
 
   tasks:
-    # - name: Ensure previous ansible/inventories.ini is deleted
-    #   ansible.builtin.file:
-    #     path: "{{ inventory_path }}"
-    #     state: absent
+    - name: Ensure previous ansible/inventories.ini is deleted
+      ansible.builtin.file:
+        path: "{{ inventory_path }}"
+        state: absent
 
     - name: Read terraform.tfstate
       slurp:
@@ -41,19 +41,3 @@
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }}
           {% endfor %}
-
-- name: Install and configure NGINX on web hosts
-  hosts: web
-  become: true
-  tasks:
-    - name: Install NGINX
-      apt:
-        name: nginx
-        state: present
-        update_cache: true
-
-    - name: Ensure NGINX is running and enabled
-      service:
-        name: nginx
-        state: started
-        enabled: true
