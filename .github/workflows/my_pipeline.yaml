@@ -98,11 +98,8 @@ jobs:
           
       - name: Run Ansible Playbook - install webservers from inventories.ini file
         run: |
-          ansible-playbook ansible/main.yml -i ansible/inventories.ini \
+          ansible-playbook ansible/configure_webservers.yml -i ansible/inventories.ini \
             --private-key ~/.ssh/msd_assignment_key.pem
-          
-      # - name: Run Ansible Playbook
-      #   run: ansible-playbook ansible/main.yml
 
       - name: Commit Ansible output (if any)
         run: |
