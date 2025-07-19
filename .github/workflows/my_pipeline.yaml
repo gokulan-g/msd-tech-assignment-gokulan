@@ -17,7 +17,7 @@ permissions:
   contents: write # Required to push to github
 
 jobs:
-  setup:
+  Infra-As-Code:
     runs-on: ubuntu-latest
 
     steps:
@@ -62,45 +62,29 @@ jobs:
           git commit -m "Save Terraform state after ${{ github.event.inputs.terraform_action }}"
           git push
 
-# name: Manual Setup - Terraform & Ansible
+ # ---------------------- Start Ansible Integration ---------------------------------------------- # 
+ 
+  ansible:
+    runs-on: ubuntu-latest
+    needs: Infra-As-Code
+    if: ${{ github.event.inputs.terraform_action == 'apply' }}
 
-# on:
-#   workflow_dispatch:  # Only run manually from the GitHub Actions UI
-  
-# permissions:
-#   id-token: write   # This is required for requesting the JWT
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-# jobs:
-#   setup:
-#     runs-on: ubuntu-latest
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
 
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
+      - name: Run Ansible Playbook
+        run: ansible-playbook ansible/main.yml
 
-#       - name: Install Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: 1.12.2 
-
-#       - name: Show Terraform version
-#         run: terraform -version
-
-#       # - name: Install Ansible
-#       #   run: |
-#       #     sudo apt update
-#       #     sudo apt install -y ansible
-
-#       # - name: Show Ansible version
-#       #   run: ansible --version
-
-#       - name: Configure AWS credentials (Use Open ID Connect)
-#         uses: aws-actions/configure-aws-credentials@v4.1.0
-#         with:
-#           role-to-assume: arn:aws:iam::975050221465:role/msd-tech-assignment-aws-role
-#           aws-region: ap-south-1
-          
-
-#       - name: Apply Terraform
-#         working-directory: ./terraform
-#         run: terraform init && terraform apply -auto-approve
+      - name: Commit Ansible output (if any)
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add ansible/inventories.ini || true
+          git commit -m "Add Ansible output after apply" || echo "No changes"
+          git push
