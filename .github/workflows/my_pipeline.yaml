@@ -1,0 +1,28 @@
+name: Manual Setup - Terraform & Ansible
+
+on:
+  workflow_dispatch:  # Only run manually from the GitHub Actions UI
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6 
+
+      - name: Show Terraform version
+        run: terraform -version
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Show Ansible version
+        run: ansible --version
