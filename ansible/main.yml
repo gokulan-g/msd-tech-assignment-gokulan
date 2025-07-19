@@ -3,9 +3,9 @@
   gather_facts: false
 
   vars:
-    tfstate_path: "./terraform/terraform.tfstate"
-    inventory_path: "./terraform/inventories.ini"
-    inventory_dir: "./terraform"
+    tfstate_path: "../terraform/terraform.tfstate"
+    inventory_path: "../terraform/inventories.ini"
+    inventory_dir: "../terraform"
 
   tasks:
     - name: print the file
