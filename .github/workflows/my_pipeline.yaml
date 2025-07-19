@@ -2,6 +2,9 @@ name: Manual Setup - Terraform & Ansible
 
 on:
   workflow_dispatch:  # Only run manually from the GitHub Actions UI
+  
+permissions:
+  id-token: write   # This is required for requesting the JWT
 
 jobs:
   setup:
@@ -26,3 +29,12 @@ jobs:
 
       - name: Show Ansible version
         run: ansible --version
+
+      - name: Configure AWS credentials (Use Open ID Connect)
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::975050221465:role/msd-tech-assignment-aws-role
+
+      - name: Apply Terraform
+        working-directory: ./terraform
+        run: terraform init && terraform apply -auto-approve
