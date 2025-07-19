@@ -86,6 +86,17 @@ jobs:
           sudo ansible --version
           sudo ansible-galaxy --version
 
+      - name: Save SSH Key from Secret
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/msd_assignment_key.pem
+          chmod 600 ~/.ssh/msd_assignment_key.pem
+          
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook ansible/main.yml -i ansible/inventories.ini \
+            --private-key ~/.ssh/msd_assignment_key.pem
+          
       - name: Run Ansible Playbook
         run: ansible-playbook ansible/main.yml
 
