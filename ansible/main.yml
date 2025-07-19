@@ -1,38 +1,44 @@
----
-- name: Read Terraform statefile, create inventory file and setup webservers
+- name: Generate Ansible inventory from terraform.tfstate
   hosts: localhost
   gather_facts: false
+
   vars:
-    tfstate_file: "terraform/terraform.tfstate"
+    tfstate_path: "./terraform/terraform.tfstate"
+    inventory_path: "./terraform/inventories.ini"
+    inventory_dir: "./terraform"
 
   tasks:
-    - name: Read terraform state
+    - name: Ensure inventory directory exists
+      file:
+        path: "{{ inventory_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Read terraform.tfstate
+      slurp:
+        src: "{{ tfstate_path }}"
+      register: raw_tfstate
+
+    - name: Parse tfstate JSON
       set_fact:
-        tf_instances: "{{ lookup('cloud.terraform.terraform_state', tfstate_file).resources }}"
-    
-    - name: Extract public IPs and hostnames from aws_instance resources
+        tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
+
+    - name: Extract EC2 instances with 'Name' tag
       set_fact:
-        instances_info: >-
+        named_instances: >-
           {{
-            tf_instances
+            tfstate.resources
             | selectattr('type', 'equalto', 'aws_instance')
-            | selectattr('name', 'equalto', 'ubuntu_server')
-            | map(attribute='instances')
-            | sum(start=[])
+            | map(attribute='instances') | sum(start=[])
             | map(attribute='attributes')
-            | map('extract', ['public_ip', 'public_dns'])
-            | list
+            | selectattr('tags.Name', 'defined')
           }}
 
-    - name: Show extracted instance info
-      debug:
-        msg: "{{ instances_info }}"
-    
-    - name: Write inventories.ini file
+    - name: Write inventory.ini file for Ansible
       copy:
-        dest: "ansible/inventories.ini"
+        dest: "{{ inventory_path }}"
         content: |
-          [webservers]
-          {% for ip, dns in instances_info %}
-          {{ dns }} ansible_host={{ ip }}
+          [web]
+          {% for inst in named_instances %}
+          {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }}
           {% endfor %}
