@@ -1,4 +1,4 @@
-name: Manual Setup - Terraform & Ansible
+name: Assignment Pipeline
 
 on:
   workflow_dispatch:
@@ -72,6 +72,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        
+      - name: Pull latest changes from main branch
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git pull origin main
 
       - name: Install Ansible
         run: |
