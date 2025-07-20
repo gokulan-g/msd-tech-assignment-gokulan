@@ -94,12 +94,12 @@ jobs:
 
       - name: Run Ansible Playbook - create inventories.ini file
         run: |
-          ansible-playbook ansible/main.yml
+          ansible-playbook ansible/main.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
           
       - name: Run Ansible Playbook - install webservers from inventories.ini file
         run: |
           ansible-playbook ansible/configure_webservers.yml -i ansible/inventories.ini \
-            --private-key ~/.ssh/msd_assignment_key.pem
+            --private-key ~/.ssh/msd_assignment_key.pem --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
 
       - name: Commit Ansible output (if any)
         run: |
