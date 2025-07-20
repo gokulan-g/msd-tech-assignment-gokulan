@@ -8,8 +8,7 @@
     db_name: mydb
     db_user: postgres
     db_port: 5432
-    #ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
-    ansible_python_interpreter: /usr/bin/python3
+    ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
     
 
   tasks:
