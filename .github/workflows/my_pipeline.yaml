@@ -56,13 +56,13 @@ jobs:
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
           
-      - name: Run Terraform Apply or Destroy
-        working-directory: ./terraform
-        run: |
-          endpoint=$(terraform state show aws_db_instance.postgres | grep -v listener| grep -i endpoint)
-          endpoint=$(echo "$endpoint" | awk -F'"' '{print $2}' | awk -F':' '{print $1}')
-          echo "db_host=$endpoint" >> "$GITHUB_OUTPUT"
-          echo $db_host
+      # - name: Run Terraform Apply or Destroy
+      #   working-directory: ./terraform
+      #   run: |
+      #     endpoint=$(terraform state show aws_db_instance.postgres | grep -v listener| grep -i endpoint)
+      #     endpoint=$(echo "$endpoint" | awk -F'"' '{print $2}' | awk -F':' '{print $1}')
+      #     echo "db_host=$endpoint" >> "$GITHUB_OUTPUT"
+      #     echo $db_host
 
       - name: Commit terraform state to repo
         run: |
@@ -103,15 +103,12 @@ jobs:
           chmod 600 ~/.ssh/msd_assignment_key.pem
 
       - name: Run Ansible Playbook - create inventories.ini file
-        run: |
-          ansible-playbook ansible/main.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}" \
-            --extra-vars "db_host=${{ needs.Infra-As-Code.outputs.db_host }}"
+        run: ansible-playbook ansible/main.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
           
       - name: Run Ansible Playbook - install webservers from inventories.ini file
         run: |
           ansible-playbook ansible/configure_webservers.yml -i ansible/inventories.ini \
-            --private-key ~/.ssh/msd_assignment_key.pem --extra-vars "db_password=${{ secrets.DB_PASSWORD }}" \
-              --extra-vars "db_host=${{ needs.Infra-As-Code.outputs.db_host }}"
+            --private-key ~/.ssh/msd_assignment_key.pem --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
 
       - name: Commit Ansible output (if any)
         run: |
