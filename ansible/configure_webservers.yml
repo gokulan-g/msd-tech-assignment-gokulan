@@ -5,7 +5,7 @@
     db_name: mydb
     db_user: postgres
     db_port: 5432
-    ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
+    #ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
     
   tasks:
     - name: Install NGINX
@@ -47,6 +47,8 @@
         query: SELECT * FROM cars;
       register: query_result
       no_log: true
+      vars:
+        ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
 
     - name: Show query results for debugging (optional)
       debug:
