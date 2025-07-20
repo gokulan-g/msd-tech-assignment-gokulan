@@ -44,7 +44,6 @@ jobs:
 
       - name: Run Terraform Apply or Destroy
         working-directory: ./terraform
-        
         run: |
           if [ "${{ github.event.inputs.terraform_action }}" == "apply" ]; then
             terraform apply -auto-approve
@@ -56,6 +55,14 @@ jobs:
           fi
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+          
+      - name: Run Terraform Apply or Destroy
+        working-directory: ./terraform
+        run: |
+          endpoint=$(terraform state show aws_db_instance.postgres | grep -v listener| grep -i endpoint)
+          endpoint=$(echo "$endpoint" | awk -F'"' '{print $2}' | awk -F':' '{print $1}')
+          echo "db_host=$endpoint" >> $GITHUB_ENV
+          echo $db_host
 
       - name: Commit terraform state to repo
         run: |
