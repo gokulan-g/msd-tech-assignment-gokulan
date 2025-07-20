@@ -89,11 +89,21 @@ jobs:
           git config --global user.name "GitHub Actions"
           git pull origin main
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.3'
+
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible
           sudo apt install -y python3-psycopg2
+          ansible-galaxy collection install community.postgresql
+
+      - name: Install dependencies
+        run: |
+          /opt/hostedtoolcache/Python/3.12.3/x64/bin/pip install ansible psycopg2-binary
 
       - name: Save SSH Key from Secret
         run: |
