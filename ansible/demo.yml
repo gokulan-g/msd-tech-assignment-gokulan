@@ -11,7 +11,6 @@
     index_html_path: "/var/www/html/index.html"
 
   tasks:
-
     - name: Create cars table
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
