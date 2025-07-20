@@ -1,0 +1,32 @@
+name: Assignment Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      terraform_action:
+        description: 'Select Terraform Action'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+
+permissions:
+  id-token: write
+  contents: write # Required to push to github
+
+jobs:
+  Test-Runner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+          sudo apt install -y python3-psycopg2
+
+
+      - name: Run Ansible Playbook - create inventories.ini file
+        run: ansible-playbook ansible/demo.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
