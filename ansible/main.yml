@@ -5,6 +5,9 @@
   vars:
     tfstate_path: "../terraform/terraform.tfstate"
     inventory_path: "./inventories.ini"
+    db_port: 5432
+    db_user: postgres
+    
 
   tasks:
     - name: Ensure previous ansible/inventories.ini is deleted
