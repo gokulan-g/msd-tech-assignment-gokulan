@@ -29,14 +29,17 @@
       slurp:
         src: "{{ tfstate_path }}"
       register: raw_tfstate
+      delegate_to: localhost
 
     - name: Parse tfstate JSON
       ansible.builtin.set_fact:
         tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
+      delegate_to: localhost
         
     - name: Extract postgres hostname
       set_fact:
         db_host: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[0] }}"
+      delegate_to: localhost
       
     - name: Read content from PostgreSQL
       community.postgresql.postgresql_query:
@@ -50,10 +53,12 @@
       no_log: true
       vars:
         ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
+      delegate_to: localhost
 
     - name: Show query results for debugging (optional)
       debug:
         var: query_result
+      delegate_to: localhost
         
     - name: Create index.html with Hello World and hostname
       copy:
