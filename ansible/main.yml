@@ -42,7 +42,7 @@
           {% endfor %}
           
     - name: Create cars table
-      no_log: true
+      #no_log: true
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
         login_host: "{{ db_host }}"
@@ -58,7 +58,7 @@
           );
 
     - name: Insert car data
-      no_log: true
+      #no_log: true
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
         login_host: "{{ db_host }}"
