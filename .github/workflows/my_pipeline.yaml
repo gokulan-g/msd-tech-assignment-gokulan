@@ -44,17 +44,18 @@ jobs:
 
       - name: Run Terraform Apply or Destroy
         working-directory: ./terraform
+        
         run: |
           if [ "${{ github.event.inputs.terraform_action }}" == "apply" ]; then
             terraform apply -auto-approve
-            env:
-              TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
           elif [ "${{ github.event.inputs.terraform_action }}" == "destroy" ]; then
             terraform destroy -auto-approve
           else
             echo "Invalid action: ${{ github.event.inputs.terraform_action }}"
             exit 1
           fi
+        env:
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
       - name: Commit terraform state to repo
         run: |
