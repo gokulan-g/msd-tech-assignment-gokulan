@@ -13,3 +13,19 @@
         name: nginx
         state: started
         enabled: true
+
+    - name: Get the hostname
+      command: hostname
+      register: hostname_output
+
+    - name: Create index.html with Hello World and hostname
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+          <head><title>Hello</title></head>
+          <body>
+            <h1>Hello World</h1>
+            <h2>Hostname: {{ hostname_output.stdout }}</h2>
+          </body>
+          </html>
