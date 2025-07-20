@@ -136,15 +136,6 @@ resource "aws_instance" "ubuntu_server" {
   subnet_id              = element(data.aws_subnets.filtered_subnets.ids, count.index)
   vpc_security_group_ids = [aws_security_group.ssh_access.id]
 
-#   user_data = <<-EOF
-#               #!/bin/bash
-#               apt update
-#               apt install -y nginx
-#               echo "Welcome to UbuntuWebServer${count.index + 1}" > /var/www/html/index.html
-#               systemctl enable nginx
-#               systemctl start nginx
-#               EOF
-
   tags = {
     Name = "UbuntuWebServer${count.index + 1}"
   }
@@ -163,7 +154,10 @@ resource "aws_lb_target_group" "assignment_tg" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
-
+  stickiness {
+    type            = "lb_cookie"
+    enabled         = false
+  }
   health_check {
     path                = "/"
     protocol            = "HTTP"
