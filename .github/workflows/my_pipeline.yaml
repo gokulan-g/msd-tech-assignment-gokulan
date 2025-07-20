@@ -94,8 +94,6 @@ jobs:
           sudo apt update
           sudo apt install -y ansible
           sudo apt install -y python3-psycopg2
-          sudo ansible --version
-          sudo ansible-galaxy --version
 
       - name: Save SSH Key from Secret
         run: |
