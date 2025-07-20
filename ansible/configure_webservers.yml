@@ -97,12 +97,46 @@
                 <td>Hello World!</td>
               </tr>
               <tr>
-                <td>{{ hostname_output }}</td>
+                <td>{{ ansible_hostname }}</td>
               </tr>
               <tr>
-                <td>{{ query_result }}</td>
+                  <table>
+                    <tr>
+                      <th>ID</th>
+                      <th>Brand</th>
+                      <th>Model</th>
+                      <th>Year</th>
+                    </tr>
+                    {% for car in query_result.query_result %}
+                    <tr>
+                      <td>{{ car.id }}</td>
+                      <td>{{ car.brand }}</td>
+                      <td>{{ car.model }}</td>
+                      <td>{{ car.year }}</td>
+                    </tr>
+                    {% endfor %}
+                  </table>
               </tr>
             </table>
           
           </body>
           </html>
+
+    - name: Create nginx watchdog script
+      copy:
+        dest: /usr/local/bin/nginx_watchdog.sh
+        content: |
+          #!/bin/bash
+          if ! systemctl is-active --quiet nginx; then
+              systemctl start nginx
+          fi
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create cron job to check nginx every 5 minutes
+      cron:
+        name: "Nginx watchdog - restart if not running"
+        job: "/usr/local/bin/nginx_watchdog.sh"
+        minute: "*/5"
+        user: root
