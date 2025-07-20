@@ -17,7 +17,22 @@
     - name: Get the hostname
       command: hostname
       register: hostname_output
+      
+    - name: Read content from PostgreSQL
+      community.postgresql.postgresql_query:
+      no_log: true
+        db: "{{ db_name }}"
+        login_host: "{{ db_host }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        port: "{{ db_port }}"
+        query: "SELECT * FROM cars;"
+      register: query_result
 
+    - name: Show query results for debugging (optional)
+      debug:
+        var: query_result
+        
     - name: Create index.html with Hello World and hostname
       copy:
         dest: /var/www/html/index.html
@@ -26,6 +41,7 @@
           <head><title>Hello</title></head>
           <body>
             <h1>Hello World</h1>
-            <h2>Hostname: {{ hostname_output.stdout }}</h2>
+            <h2>I'm coming from Hostname: {{ hostname_output.stdout }}</h2>
+            <h1>{{ query_result }}</h1>
           </body>
           </html>
