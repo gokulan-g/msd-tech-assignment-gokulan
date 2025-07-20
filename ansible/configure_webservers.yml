@@ -97,10 +97,10 @@
                 <td>Hello World!</td>
               </tr>
               <tr>
-                <td>{{ hostname_output.stdout }}</td>
+                <td>{{ hostname_output }}</td>
               </tr>
               <tr>
-                <td>{{ query_result.stdout }}</td>
+                <td>{{ query_result }}</td>
               </tr>
             </table>
           
