@@ -1,4 +1,4 @@
-name: Assignment Pipeline
+name: Testing runner
 
 on:
   workflow_dispatch:
