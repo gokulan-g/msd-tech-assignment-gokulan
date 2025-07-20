@@ -40,3 +40,50 @@
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           {% endfor %}
+          
+    - name: Create cars table
+      no_log: true
+      community.postgresql.postgresql_query:
+        db: "{{ db_name }}"
+        login_host: "{{ db_host }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        port: "{{ db_port }}"
+        query: |
+          CREATE TABLE IF NOT EXISTS cars (
+              id SERIAL PRIMARY KEY,
+              brand TEXT,
+              model TEXT,
+              year INT
+          );
+
+    - name: Insert car data
+      no_log: true
+      community.postgresql.postgresql_query:
+        db: "{{ db_name }}"
+        login_host: "{{ db_host }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        port: "{{ db_port }}"
+        query: |
+          INSERT INTO cars (brand, model, year) VALUES
+          ('Toyota', 'Corolla', 2020),
+          ('Honda', 'Civic', 2019),
+          ('Ford', 'Mustang', 2021);
+
+
+    - name: Read content from PostgreSQL
+      community.postgresql.postgresql_query:
+      no_log: true
+        db: "{{ db_name }}"
+        login_host: "{{ db_host }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        port: "{{ db_port }}"
+        query: "SELECT * FROM cars;"
+      register: query_result
+
+    - name: Show query results for debugging (optional)
+      debug:
+        var: query_result
+
