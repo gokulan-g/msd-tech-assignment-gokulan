@@ -9,6 +9,7 @@
     db_user: "postgres"
     db_password: "gokulan123"
     index_html_path: "/var/www/html/index.html"
+    ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
 
   tasks:
     - name: Create cars table
