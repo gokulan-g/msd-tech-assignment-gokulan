@@ -44,7 +44,11 @@
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           {% endfor %}
-          
+   
+    - name: Extract postgres hostname
+      set_fact:
+        db_host: "{{ tfstate.postgres_endpoint.value.split(':')[0] }}"
+       
     - name: Create cars table
       #no_log: true
       community.postgresql.postgresql_query:
