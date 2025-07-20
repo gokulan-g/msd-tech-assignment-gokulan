@@ -51,7 +51,6 @@
         db_host: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[0] }}"
        
     - name: Create cars table
-      #no_log: true
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
         login_host: "{{ db_host }}"
@@ -65,6 +64,7 @@
               model TEXT,
               year INT
           );
+      no_log: true
 
     - name: Insert car data
       #no_log: true
