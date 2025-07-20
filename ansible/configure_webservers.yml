@@ -45,7 +45,7 @@
         login_user: "{{ db_user }}"
         login_password: "{{ db_password }}"
         port: "{{ db_port }}"
-        query: "SELECT * FROM cars;"
+        query: SELECT * FROM cars;
       register: query_result
 
     - name: Show query results for debugging (optional)
