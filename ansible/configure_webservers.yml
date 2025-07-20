@@ -1,6 +1,10 @@
 - name: Install and configure NGINX on web hosts
   hosts: web
   become: true
+  vars:
+    db_name: mydb
+    db_user: postgres
+    db_port: 5432
   tasks:
     - name: Install NGINX
       apt:
