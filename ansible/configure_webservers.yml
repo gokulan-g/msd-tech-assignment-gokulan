@@ -21,6 +21,19 @@
     - name: Get the hostname
       command: hostname
       register: hostname_output
+
+    - name: Read terraform.tfstate
+      slurp:
+        src: "{{ tfstate_path }}"
+      register: raw_tfstate
+
+    - name: Parse tfstate JSON
+      ansible.builtin.set_fact:
+        tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
+        
+    - name: Extract postgres hostname
+      set_fact:
+        db_host: "{{ tfstate.postgres_endpoint.value.split(':')[0] }}"
       
     - name: Read content from PostgreSQL
       community.postgresql.postgresql_query:
