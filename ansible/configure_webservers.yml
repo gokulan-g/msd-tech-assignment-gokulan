@@ -33,7 +33,7 @@
         
     - name: Extract postgres hostname
       set_fact:
-        db_host: "{{ tfstate.postgres_endpoint.value.split(':')[0] }}"
+        db_host: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[0] }}"
       
     - name: Read content from PostgreSQL
       community.postgresql.postgresql_query:
