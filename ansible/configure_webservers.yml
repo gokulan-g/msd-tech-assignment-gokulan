@@ -1,5 +1,5 @@
 - name: Install and configure NGINX on web hosts
-  hosts: web
+  hosts: webservers
   become: true
   vars:
     db_name: mydb
