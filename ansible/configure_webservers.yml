@@ -39,7 +39,6 @@
       
     - name: Read content from PostgreSQL
       community.postgresql.postgresql_query:
-      no_log: true
         db: "{{ db_name }}"
         login_host: "{{ db_host }}"
         login_user: "{{ db_user }}"
@@ -47,6 +46,7 @@
         port: "{{ db_port }}"
         query: SELECT * FROM cars;
       register: query_result
+      no_log: true
 
     - name: Show query results for debugging (optional)
       debug:
