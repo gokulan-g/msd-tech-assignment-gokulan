@@ -71,19 +71,3 @@
           ('Honda', 'Civic', 2019),
           ('Ford', 'Mustang', 2021);
 
-
-    - name: Read content from PostgreSQL
-      community.postgresql.postgresql_query:
-      no_log: true
-        db: "{{ db_name }}"
-        login_host: "{{ db_host }}"
-        login_user: "{{ db_user }}"
-        login_password: "{{ db_password }}"
-        port: "{{ db_port }}"
-        query: "SELECT * FROM cars;"
-      register: query_result
-
-    - name: Show query results for debugging (optional)
-      debug:
-        var: query_result
-
