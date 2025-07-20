@@ -35,6 +35,10 @@ jobs:
           sudo apt install -y ansible
           sudo apt install -y python3-psycopg2
           ansible-galaxy collection install community.postgresql
+          
+      - name: Install dependencies
+        run: |
+          /opt/hostedtoolcache/Python/3.12.3/x64/bin/pip install ansible psycopg2-binary
 
 
       - name: Run Ansible Playbook - create inventories.ini file
