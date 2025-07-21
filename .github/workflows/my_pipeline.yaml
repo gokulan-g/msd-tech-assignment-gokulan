@@ -110,6 +110,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/msd_assignment_key.pem
           chmod 600 ~/.ssh/msd_assignment_key.pem
+          
+      - name: Configure AWS credentials (Use Open ID Connect)
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/msd-tech-assignment-aws-role
+          aws-region: ap-south-1
 
       - name: Run Ansible Playbook - create inventories.ini file
         run: ansible-playbook ansible/main.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
