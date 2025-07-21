@@ -10,7 +10,6 @@ on:
         type: choice
         options:
           - apply
-          - destroy
 
 permissions:
   id-token: write
@@ -24,22 +23,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12.3'
+      # - name: Set up Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: '3.12.3'
           
       - name: Install Ansible
         run: |
           sudo apt update
-          sudo apt install -y ansible
-          sudo apt install -y python3-psycopg2
-          ansible-galaxy collection install community.postgresql
-          
-      - name: Install dependencies
-        run: |
-          /opt/hostedtoolcache/Python/3.12.3/x64/bin/pip install ansible psycopg2-binary
+          sudo apt install -y ansible awscli
 
-
-      - name: Run Ansible Playbook - create inventories.ini file
-        run: ansible-playbook ansible/demo.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
+      - name: Run Ansible Playbook
+        run: ansible-playbook ansible/demo.yml
