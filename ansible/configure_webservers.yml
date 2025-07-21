@@ -2,11 +2,13 @@
   hosts: webservers
   become: true
   vars:
-    tfstate_path: "../terraform/terraform.tfstate"
     db_name: mydb
     db_user: postgres
-    db_port: 5432
     #ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
+    bucket_name: msd-assignment-bucket
+    object_key: terraform.tfstate
+    region: ap-south-1
+    local_state_file: /tmp/terraform.tfstate
     
   tasks:
     - name: Install NGINX
@@ -27,10 +29,10 @@
 
     - name: Read terraform.tfstate
       slurp:
-        src: "{{ tfstate_path }}"
+        src: "{{ local_state_file }}"
       register: raw_tfstate
       delegate_to: localhost
-
+      
     - name: Parse tfstate JSON
       ansible.builtin.set_fact:
         tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
@@ -39,6 +41,7 @@
     - name: Extract postgres hostname
       set_fact:
         db_host: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[0] }}"
+        db_port: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[1] }}"
       delegate_to: localhost
       
     - name: Read content from PostgreSQL
@@ -121,7 +124,7 @@
           
           </body>
           </html>
-
+#############################################################################################################
     - name: Create nginx watchdog script
       copy:
         dest: /usr/local/bin/nginx_watchdog.sh
