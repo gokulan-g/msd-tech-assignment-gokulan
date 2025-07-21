@@ -68,9 +68,9 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add terraform/terraform.tfstate terraform/.terraform.lock.hcl
-          git commit -m "Save Terraform state after ${{ github.event.inputs.terraform_action }}"
-          git push
+          git add terraform/.terraform.lock.hcl || true
+          git commit -m "Save Terraform.lock.hcl after ${{ github.event.inputs.terraform_action }}" || echo "No changes to commit"
+          git push || echo "Nothing to push"
 
  # ---------------------- Start Ansible Integration ---------------------------------------------- # 
  
@@ -83,11 +83,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
-      - name: Pull latest changes from main branch
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git pull origin main
+      # - name: Pull latest changes from main branch
+      #   run: |
+      #     git config --global user.email "actions@github.com"
+      #     git config --global user.name "GitHub Actions"
+      #     git pull origin main
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -110,6 +110,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/msd_assignment_key.pem
           chmod 600 ~/.ssh/msd_assignment_key.pem
+          
+      - name: Configure AWS credentials (Use Open ID Connect)
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/msd-tech-assignment-aws-role
+          aws-region: ap-south-1
 
       - name: Run Ansible Playbook - create inventories.ini file
         run: ansible-playbook ansible/main.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"

@@ -3,12 +3,15 @@
   gather_facts: false
 
   vars:
-    tfstate_path: "../terraform/terraform.tfstate"
     inventory_path: "./inventories.ini"
     db_name: mydb
     db_user: postgres
-    db_port: 5432
     ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
+    bucket_name: msd-assignment-bucket
+    object_key: terraform.tfstate
+    region: ap-south-1
+    local_state_file: /tmp/terraform.tfstate
+    
     
 
   tasks:
@@ -17,9 +20,15 @@
         path: "{{ inventory_path }}"
         state: absent
 
+    - name: Download Terraform state file from S3
+      command: >
+        aws s3 cp s3://{{ bucket_name }}/{{ object_key }} {{ local_state_file }}
+        --region {{ region }}
+      register: s3_fetch_result
+
     - name: Read terraform.tfstate
       slurp:
-        src: "{{ tfstate_path }}"
+        src: "{{ local_state_file }}"
       register: raw_tfstate
 
     - name: Parse tfstate JSON
@@ -49,7 +58,8 @@
     - name: Extract postgres hostname
       set_fact:
         db_host: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[0] }}"
-       
+        db_port: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[1] }}"
+        
     - name: Create cars table
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
@@ -67,7 +77,6 @@
       no_log: true
 
     - name: Insert car data
-      #no_log: true
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
         login_host: "{{ db_host }}"
@@ -79,4 +88,4 @@
           ('Toyota', 'Corolla', 2020),
           ('Honda', 'Civic', 2019),
           ('Ford', 'Mustang', 2021);
-
+      no_log: true    

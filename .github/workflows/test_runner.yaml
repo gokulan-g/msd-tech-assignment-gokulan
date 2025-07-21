@@ -10,7 +10,6 @@ on:
         type: choice
         options:
           - apply
-          - destroy
 
 permissions:
   id-token: write
@@ -24,22 +23,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12.3'
+      # - name: Set up Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: '3.12.3'
           
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible
-          sudo apt install -y python3-psycopg2
-          ansible-galaxy collection install community.postgresql
           
-      - name: Install dependencies
-        run: |
-          /opt/hostedtoolcache/Python/3.12.3/x64/bin/pip install ansible psycopg2-binary
+      # - name: Install AWS CLI v2
+      #   run: |
+      #     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      #     unzip awscliv2.zip
+      #     sudo ./aws/install
+      #     aws --version
 
+      - name: Check AWS CLI Version
+        run: aws --version
 
-      - name: Run Ansible Playbook - create inventories.ini file
-        run: ansible-playbook ansible/demo.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
+      - name: Configure AWS credentials (Use Open ID Connect)
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/msd-tech-assignment-aws-role
+          aws-region: ap-south-1
+          
+      - name: Run Ansible Playbook
+        run: ansible-playbook ansible/demo.yml
