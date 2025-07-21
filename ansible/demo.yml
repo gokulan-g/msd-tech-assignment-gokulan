@@ -8,6 +8,7 @@
     region: ap-south-1
     local_state_file: /tmp/terraform.tfstate
 
+
   tasks:
 
     - name: Ensure AWS CLI is installed
@@ -26,17 +27,16 @@
         --region {{ region }}
       register: s3_fetch_result
 
-    - name: Parse RDS endpoint from tfstate
-      command: >
-        jq -r '.resources[] 
-          | select(.type == "aws_db_instance" and .name == "postgres") 
-          | .instances[0].attributes.endpoint' {{ local_state_file }}
-      register: rds_endpoint
+
+    - name: Read terraform.tfstate
+      slurp:
+        src: "{{ local_state_file }}"
+      register: raw_tfstate
+
+    - name: Parse tfstate JSON
+      ansible.builtin.set_fact:
+        tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
 
     - name: Show RDS Endpoint
       debug:
-        msg: "RDS Endpoint is {{ rds_endpoint.stdout }}"
-
-    # Optional: set fact to use later
-    - set_fact:
-        db_host: "{{ rds_endpoint.stdout }}"
+        var: tfstate
