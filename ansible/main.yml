@@ -4,8 +4,6 @@
 
   vars:
     inventory_path: "./inventories.ini"
-    db_name: mydb
-    db_user: postgres
     ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
     bucket_name: msd-assignment-bucket
     object_key: terraform.tfstate
@@ -54,11 +52,23 @@
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           {% endfor %}
-   
+ 
+    - name: Get RDS resource dictionary for aws_db_instance.postgres
+      set_fact:
+        postgres_resource: >-
+          {{ tfstate.resources
+             | selectattr('type', 'equalto', 'aws_db_instance')
+             | selectattr('name', 'equalto', 'postgres')
+             | list | first }}
+
+  
     - name: Extract postgres hostname
       set_fact:
-        db_host: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[0] }}"
-        db_port: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[1] }}"
+        db_host: "{{ postgres_resource.instances[0].attributes.address }}"
+        db_port: "{{ postgres_resource.instances[0].attributes.port }}"
+        db_user: "{{ postgres_resource.instances[0].attributes.username }}"
+        db_password: "{{ postgres_resource.instances[0].attributes.username }}"
+      no_log: true #to ensure db_password is not printed on the console
         
     - name: Create cars table
       community.postgresql.postgresql_query:
