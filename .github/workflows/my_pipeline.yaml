@@ -40,7 +40,8 @@ jobs:
 
       - name: Terraform Init
         working-directory: ./terraform
-        run: terraform init
+        #run: terraform init
+        run: terraform init -backend-config="state.config"
 
       - name: Run Terraform Apply or Destroy
         working-directory: ./terraform
