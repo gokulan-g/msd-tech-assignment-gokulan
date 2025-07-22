@@ -18,3 +18,8 @@ variable "backend_s3_bucket_region" {
     description = "Backend S3 bucket region"
     type = string
 }
+
+variable "application_load_balancer_name" {
+    description = "Application Load Balacer Name"
+    type = string
+}
