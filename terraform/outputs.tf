@@ -18,7 +18,10 @@ output "postgres_endpoint" {
   description = "The DNS endpoint of the PostgreSQL RDS instance"
 }
 
-
 output "website_url" {
   value = "https://gokulang.com"
+}
+
+output "backend_bucket_name" {
+  value = var.backend_bucket_name
 }
