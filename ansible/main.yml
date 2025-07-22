@@ -67,7 +67,7 @@
         db_host: "{{ postgres_resource.instances[0].attributes.address }}"
         db_port: "{{ postgres_resource.instances[0].attributes.port }}"
         db_user: "{{ postgres_resource.instances[0].attributes.username }}"
-        db_password: "{{ postgres_resource.instances[0].attributes.username }}"
+        db_password: "{{ postgres_resource.instances[0].attributes.password }}"
       no_log: true #to ensure db_password is not printed on the console
         
     - name: Create cars table
