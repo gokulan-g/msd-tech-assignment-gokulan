@@ -5,9 +5,9 @@
   vars:
     inventory_path: "./inventories.ini"
     ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
-    #bucket_name: msd-assignment-bucket
+    s3_bucket_name: msd-assignment-bucket
     object_key: terraform.tfstate
-    #region: ap-south-1
+    region: ap-south-1
     local_state_file: /tmp/terraform.tfstate
     
     
@@ -17,6 +17,12 @@
       ansible.builtin.file:
         path: "{{ inventory_path }}"
         state: absent
+
+    - name: Download Terraform state file from S3
+      command: >
+        aws s3 cp s3://{{ s3_bucket_name }}/{{ object_key }} {{ local_state_file }}
+        --region {{ s3_bucket_region }}
+      register: s3_fetch_result
 
     - name: Read terraform.tfstate
       slurp:
@@ -37,18 +43,6 @@
             | map(attribute='attributes')
             | selectattr('tags.Name', 'defined')
           }}
-
-
-    - name: Get the backend s3 bucket name
-      set_fact:
-        s3_bucket_name: "{{ tfstate.outputs.backend_s3_bucket_name.value }}"
-        s3_bucket_region: "{{ tfstate.outputs.backend_s3_bucket_region.value }}"
-
-    - name: Download Terraform state file from S3
-      command: >
-        aws s3 cp s3://{{ s3_bucket_name }}/{{ object_key }} {{ local_state_file }}
-        --region {{ s3_bucket_region }}
-      register: s3_fetch_result
 
     - name: Write inventory.ini file for Ansible
       copy:
