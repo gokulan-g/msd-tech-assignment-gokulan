@@ -7,7 +7,7 @@
     ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
     s3_bucket_name: msd-assignment-bucket
     object_key: terraform.tfstate
-    region: ap-south-1
+    s3_bucket_region: ap-south-1
     local_state_file: /tmp/terraform.tfstate
     
     
