@@ -32,10 +32,23 @@
         tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
       delegate_to: localhost
         
+    - name: Get RDS resource dictionary for aws_db_instance.postgres
+      set_fact:
+        postgres_resource: >-
+          {{ tfstate.resources
+             | selectattr('type', 'equalto', 'aws_db_instance')
+             | selectattr('name', 'equalto', 'postgres')
+             | list | first }}
+      delegate_to: localhost
+  
     - name: Extract postgres hostname
       set_fact:
-        db_host: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[0] }}"
-        db_port: "{{ tfstate.outputs.postgres_endpoint.value.split(':')[1] }}"
+        db_host: "{{ postgres_resource.instances[0].attributes.address }}"
+        db_name: "{{ postgres_resource.instances[0].attributes.db_name }}"
+        db_port: "{{ postgres_resource.instances[0].attributes.port }}"
+        db_user: "{{ postgres_resource.instances[0].attributes.username }}"
+        db_password: "{{ postgres_resource.instances[0].attributes.password }}"
+      no_log: true #to ensure db_password is not printed on the console
       delegate_to: localhost
       
     - name: Read content from PostgreSQL
@@ -56,7 +69,27 @@
       debug:
         var: query_result
       delegate_to: localhost
-        
+   
+    - name: Set font color based on hostname
+      set_fact:
+        font_color: >-
+          {% if inventory_hostname == 'UbuntuWebServer1' %}
+            teal
+          {% else %}
+            white
+          {% endif %}
+      delegate_to: true
+
+    - name: Set font color based on hostname
+      set_fact:
+        bg_color: >-
+          {% if inventory_hostname == 'UbuntuWebServer1' %}
+            white
+          {% else %}
+            teal
+          {% endif %}
+      delegate_to: true
+     
     - name: Create index.html with Hello World and hostname
       copy:
         dest: /var/www/html/index.html
@@ -66,8 +99,8 @@
           <head>
             <style>
               table {
-                background-color: teal;
-                color: white;
+                background-color: {{ bg_color }};
+                color: {{ font_color }};
                 border: 2px solid teal;
                 border-radius: 10px;
                 width: 300px;
