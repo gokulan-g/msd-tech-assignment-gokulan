@@ -78,7 +78,7 @@
           {% else %}
             white
           {% endif %}
-      delegate_to: true
+      delegate_to: localhost
 
     - name: Set font color based on hostname
       set_fact:
@@ -88,7 +88,7 @@
           {% else %}
             teal
           {% endif %}
-      delegate_to: true
+      delegate_to: localhost
      
     - name: Create index.html with Hello World and hostname
       copy:
