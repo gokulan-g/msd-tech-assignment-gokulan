@@ -142,7 +142,7 @@ resource "aws_instance" "ubuntu_server" {
 }
 
 resource "aws_lb" "assignment_lb" {
-  name               = "assignment-alb"
+  name               = var.application_load_balancer_name
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.ssh_access.id]
