@@ -27,5 +27,5 @@ output "backend_s3_bucket_name" {
 }
 
 output "backend_s3_bucket_region" {
-  value = var.backend_s3_bucket_name
+  value = var.backend_s3_bucket_region
 }
