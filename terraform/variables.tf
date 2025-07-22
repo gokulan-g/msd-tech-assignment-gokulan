@@ -9,12 +9,12 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "application_load_balancer_name" {
-    description = "Application Load Balancer"
+variable "backend_s3_bucket_name" {
+    description = "Backend S3 bucket name"
     type = string
 }
 
-variable "application_load_balancer_region" {
-    description = "Application Load Balancer Region"
+variable "backend_s3_bucket_region" {
+    description = "Backend S3 bucket region"
     type = string
 }
