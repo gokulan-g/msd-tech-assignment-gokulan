@@ -65,6 +65,7 @@
     - name: Extract postgres hostname
       set_fact:
         db_host: "{{ postgres_resource.instances[0].attributes.address }}"
+        db_name: "{{ postgres_resource.instances[0].attributes.db_name }}"
         db_port: "{{ postgres_resource.instances[0].attributes.port }}"
         db_user: "{{ postgres_resource.instances[0].attributes.username }}"
         db_password: "{{ postgres_resource.instances[0].attributes.password }}"
