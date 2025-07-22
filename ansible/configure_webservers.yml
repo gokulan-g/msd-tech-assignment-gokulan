@@ -2,12 +2,6 @@
   hosts: webservers
   become: true
   vars:
-    db_name: mydb
-    db_user: postgres
-    #ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
-    bucket_name: msd-assignment-bucket
-    object_key: terraform.tfstate
-    region: ap-south-1
     local_state_file: /tmp/terraform.tfstate
     
   tasks:
@@ -32,7 +26,7 @@
         src: "{{ local_state_file }}"
       register: raw_tfstate
       delegate_to: localhost
-      
+
     - name: Parse tfstate JSON
       ansible.builtin.set_fact:
         tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
