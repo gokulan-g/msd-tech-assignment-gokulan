@@ -137,7 +137,7 @@ resource "aws_instance" "ubuntu_server" {
   vpc_security_group_ids = [aws_security_group.ssh_access.id]
 
   tags = {
-    Name = "UbuntuWebServer${count.index + 1}"
+    Name = "${var.server_name}${count.index + 1}"
   }
 }
 
