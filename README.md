@@ -1,4 +1,4 @@
-# Webserver as Code
+# Assignment as Code
 
 ## Continuous Deployment (GitHub Actions)
 
