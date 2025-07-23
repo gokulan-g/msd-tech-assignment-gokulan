@@ -1,4 +1,4 @@
-# 🔐 Security group to allow incoming/outgoing PostgreSQL traffic (port 5432)
+# Security group to allow incoming/outgoing PostgreSQL traffic (port 5432)
 resource "aws_security_group" "connect_to_rds" {
   name        = "connect-to-rds"
   description = "Allow access on port 5432"
@@ -8,7 +8,7 @@ resource "aws_security_group" "connect_to_rds" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # ⚠️ Open to the world — restrict in production
+    cidr_blocks = ["0.0.0.0/0"]  # Open to the world — restrict in production
   }
 
   egress {
@@ -16,7 +16,7 @@ resource "aws_security_group" "connect_to_rds" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # ⚠️ Open egress — usually fine, but tighten if needed
+    cidr_blocks = ["0.0.0.0/0"]  # Open egress — usually fine, but tighten if needed
   }
 
   tags = {
@@ -24,24 +24,24 @@ resource "aws_security_group" "connect_to_rds" {
   }
 }
 
-# 📦 Fetches the latest PostgreSQL engine version from AWS
+# Fetches the latest PostgreSQL engine version from AWS
 data "aws_rds_engine_version" "postgres_latest" {
   engine = "postgres"
 }
 
-# 🛢️ RDS PostgreSQL instance
+# RDS PostgreSQL instance
 resource "aws_db_instance" "postgres" {
   identifier                   = "msd-assignment-db"
   engine                       = "postgres"
-  engine_version               = data.aws_rds_engine_version.postgres_latest.version  # ✅ Automatically fetch latest version
+  engine_version               = data.aws_rds_engine_version.postgres_latest.version  # Automatically fetch latest version
   instance_class               = "db.t4g.micro"
   allocated_storage            = 20
   storage_type                 = "gp2"
   storage_encrypted            = false
   db_name                      = "mydb"
   username                     = "postgres"
-  password                     = var.db_password  # 🔐 Best to store this in AWS Secrets Manager or use TF Cloud variable
-  publicly_accessible          = true             # ⚠️ RDS is open to the internet — secure with IP restrictions
+  password                     = var.db_password  # Best to store this in AWS Secrets Manager or use TF Cloud variable
+  publicly_accessible          = true             # RDS is open to the internet — secure with IP restrictions
   multi_az                     = false
   vpc_security_group_ids       = [aws_security_group.connect_to_rds.id]
   skip_final_snapshot          = true
@@ -53,7 +53,7 @@ resource "aws_db_instance" "postgres" {
 }
 
 #############################################
-# 🌩️ Data Sources for Ubuntu AMI and VPC Info
+# Data Sources for Ubuntu AMI and VPC Info
 #############################################
 
 data "aws_ami" "ubuntu" {
@@ -71,12 +71,12 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# 🌐 Fetch the default VPC
+# Fetch the default VPC
 data "aws_vpc" "default" {
   default = true
 }
 
-# 📡 Fetch subnets that are default in specific AZs
+# Fetch subnets that are default in specific AZs
 data "aws_subnets" "filtered_subnets" {
   filter {
     name   = "vpc-id"
@@ -90,12 +90,12 @@ data "aws_subnets" "filtered_subnets" {
 
   filter {
     name   = "availability-zone"
-    values = ["ap-south-1a", "ap-south-1b"]  # ✅ Limits subnets to 2 AZs
+    values = ["ap-south-1a", "ap-south-1b"]  # Limits subnets to 2 AZs
   }
 }
 
 ##########################################
-# 🔐 SG to allow SSH, HTTP, HTTPS traffic
+# SG to allow SSH, HTTP, HTTPS traffic
 ##########################################
 resource "aws_security_group" "ssh_access" {
   name        = "allow_ssh"
@@ -107,7 +107,7 @@ resource "aws_security_group" "ssh_access" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # ⚠️ Open to all IPs — restrict in production
+    cidr_blocks = ["0.0.0.0/0"]  # Open to all IPs — restrict in production
   }
 
   ingress {
@@ -136,7 +136,7 @@ resource "aws_security_group" "ssh_access" {
 }
 
 ###############################################
-# ☁️ EC2 Ubuntu web servers (count = variable)
+# EC2 Ubuntu web servers (count = variable)
 ###############################################
 resource "aws_instance" "ubuntu_server" {
   count         = var.instance_count
@@ -153,7 +153,7 @@ resource "aws_instance" "ubuntu_server" {
 }
 
 #########################################
-# 🌐 Application Load Balancer (ALB)
+# Application Load Balancer (ALB)
 #########################################
 resource "aws_lb" "assignment_lb" {
   name               = var.application_load_balancer_name
@@ -163,7 +163,7 @@ resource "aws_lb" "assignment_lb" {
   subnets            = data.aws_subnets.filtered_subnets.ids
 }
 
-# 🧲 Target group for ALB
+# Target group for ALB
 resource "aws_lb_target_group" "assignment_tg" {
   name     = "assignment-TG"
   port     = 80
@@ -172,7 +172,7 @@ resource "aws_lb_target_group" "assignment_tg" {
 
   stickiness {
     type    = "lb_cookie"
-    enabled = false  # ❌ No stickiness — requests distributed round-robin
+    enabled = false  # No stickiness — requests distributed round-robin
   }
 
   health_check {
@@ -186,7 +186,7 @@ resource "aws_lb_target_group" "assignment_tg" {
   }
 }
 
-# 🎯 Attach EC2 instances to target group
+# Attach EC2 instances to target group
 resource "aws_lb_target_group_attachment" "tg_attachment" {
   count            = 2
   target_group_arn = aws_lb_target_group.assignment_tg.arn
@@ -195,7 +195,7 @@ resource "aws_lb_target_group_attachment" "tg_attachment" {
 }
 
 ############################################
-# 🔒 HTTPS Listener for ALB using ACM cert
+# HTTPS Listener for ALB using ACM cert
 ############################################
 resource "aws_lb_listener" "https_listener" {
   load_balancer_arn = aws_lb.assignment_lb.arn
@@ -211,7 +211,7 @@ resource "aws_lb_listener" "https_listener" {
 }
 
 ########################################
-# 🌍 Route 53 A record for the ALB
+# Route 53 A record for the ALB
 ########################################
 data "aws_route53_zone" "gokulang" {
   name         = "gokulang.com."
