@@ -1,9 +1,10 @@
 terraform {
+  # Configure remote backend to store Terraform state in S3
   backend "s3" {
-    bucket         = "msd-assignment-bucket"
-    key            = "terraform.tfstate"
-    region         = "ap-south-1"
-    encrypt        = true             # Enable encryption at rest
-    dynamodb_table = "msd-assignment-table"
+    bucket         = ""  # Name of the S3 bucket to store the state file
+    key            = ""  # Path to the state file within the bucket 
+    region         = ""  # AWS region where the S3 bucket is located 
+    encrypt        = ""  # Whether to encrypt the state file at rest
+    dynamodb_table = ""  # DynamoDB table for state locking and consistency
   }
 }
