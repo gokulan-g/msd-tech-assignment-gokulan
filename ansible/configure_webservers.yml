@@ -1,37 +1,44 @@
+# Playbook to install NGINX, render a dynamic HTML page, and ensure NGINX stays running
 - name: Install and configure NGINX on web hosts
   hosts: webservers
   become: true
   vars:
-    local_state_file: /tmp/terraform.tfstate
-    
+    local_state_file: /tmp/terraform.tfstate  # Path to Terraform state file
+
   tasks:
+    # Install the NGINX package
     - name: Install NGINX
       apt:
         name: nginx
         state: present
         update_cache: true
 
+    # Ensure the NGINX service is started and enabled on boot
     - name: Ensure NGINX is running and enabled
       service:
         name: nginx
         state: started
         enabled: true
 
+    # Get the hostname of the target server
     - name: Get the hostname
       command: hostname
       register: hostname_output
 
+    # Read the Terraform state file from the control node
     - name: Read terraform.tfstate
       slurp:
         src: "{{ local_state_file }}"
       register: raw_tfstate
       delegate_to: localhost
 
+    # Decode and parse the base64-encoded state file into JSON
     - name: Parse tfstate JSON
       ansible.builtin.set_fact:
         tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
       delegate_to: localhost
-        
+
+    # Extract the resource dictionary for aws_db_instance.postgres from the state
     - name: Get RDS resource dictionary for aws_db_instance.postgres
       set_fact:
         postgres_resource: >-
@@ -40,7 +47,8 @@
              | selectattr('name', 'equalto', 'postgres')
              | list | first }}
       delegate_to: localhost
-  
+
+    # Extract database connection details from the parsed state
     - name: Extract postgres hostname
       set_fact:
         db_host: "{{ postgres_resource.instances[0].attributes.address }}"
@@ -48,9 +56,10 @@
         db_port: "{{ postgres_resource.instances[0].attributes.port }}"
         db_user: "{{ postgres_resource.instances[0].attributes.username }}"
         db_password: "{{ postgres_resource.instances[0].attributes.password }}"
-      no_log: true #to ensure db_password is not printed on the console
+      no_log: true  # Prevent sensitive data from being printed
       delegate_to: localhost
-      
+
+    # Run a SELECT query on the cars table from the PostgreSQL database
     - name: Read content from PostgreSQL
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
@@ -65,11 +74,13 @@
         ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
       delegate_to: localhost
 
+    # Optional debug output to display the query result
     - name: Show query results for debugging (optional)
       debug:
         var: query_result
       delegate_to: localhost
-   
+
+    # Set font color conditionally based on the hostname
     - name: Set font color based on hostname
       set_fact:
         font_color: >-
@@ -80,7 +91,8 @@
           {% endif %}
       delegate_to: localhost
 
-    - name: Set font color based on hostname
+    # Set background color conditionally based on the hostname
+    - name: Set background color based on hostname
       set_fact:
         bg_color: >-
           {% if inventory_hostname == 'UbuntuWebServer1' %}
@@ -89,7 +101,8 @@
             teal
           {% endif %}
       delegate_to: localhost
-     
+
+    # Create a custom HTML file that includes hostname and PostgreSQL query results
     - name: Create index.html with Hello World and hostname
       copy:
         dest: /var/www/html/index.html
@@ -109,19 +122,16 @@
                 font-family: Arial, sans-serif;
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
               }
-          
               td {
                 padding: 20px;
                 border-bottom: 1px solid {{ font_color }};
               }
-          
               tr:last-child td {
                 border-bottom: none;
               }
             </style>
           </head>
           <body>
-          
             <table>
               <tr>
                 <td>Hello World!</td>
@@ -148,10 +158,10 @@
                   </table>
               </tr>
             </table>
-          
           </body>
           </html>
-#############################################################################################################
+
+    # Create a watchdog script to monitor and restart NGINX if it's down
     - name: Create nginx watchdog script
       copy:
         dest: /usr/local/bin/nginx_watchdog.sh
@@ -164,6 +174,7 @@
         group: root
         mode: '0755'
 
+    # Set up a cron job to run the watchdog script every 5 minutes
     - name: Create cron job to check nginx every 5 minutes
       cron:
         name: "Nginx watchdog - restart if not running"
