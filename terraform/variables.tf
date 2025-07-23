@@ -29,3 +29,19 @@ variable "server_name" {
     description = "EC2 instance name"
     type = string
 }
+
+variable "ec2_instance_type" {
+    description = "EC2 instance name"
+    type = string
+}
+
+variable "ec2_instance_private_key" {
+    description = "EC2 instance private key"
+    type = string
+}
+
+variable "instance_count" {
+  description = "Number of ec2 instances to launch"
+  type        = number
+  default     = 2
+}
