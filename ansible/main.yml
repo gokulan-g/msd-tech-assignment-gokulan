@@ -1,38 +1,42 @@
+# Play to run on the local control node to configure DB with thable and data
 - name: Generate Ansible inventory from terraform.tfstate
   hosts: localhost
   gather_facts: false
 
   vars:
-    inventory_path: "./inventories.ini"
+    inventory_path: "./inventories.ini"  # Path to output Ansible inventory file
     ansible_python_interpreter: /opt/hostedtoolcache/Python/3.12.3/x64/bin/python
-    s3_bucket_name: msd-assignment-bucket
-    object_key: terraform.tfstate
-    s3_bucket_region: ap-south-1
-    local_state_file: /tmp/terraform.tfstate
-    
-    
+    s3_bucket_name: msd-assignment-bucket  # Name of S3 bucket where tfstate is stored
+    object_key: terraform.tfstate         # Key for the tfstate object in S3
+    s3_bucket_region: ap-south-1          # Region of the S3 bucket
+    local_state_file: /tmp/terraform.tfstate  # Temporary path to save the tfstate locally
 
   tasks:
+    # Delete any previous inventory file if it exists
     - name: Ensure previous ansible/inventories.ini is deleted
       ansible.builtin.file:
         path: "{{ inventory_path }}"
         state: absent
 
+    # Download the latest Terraform state file from S3
     - name: Download Terraform state file from S3
       command: >
         aws s3 cp s3://{{ s3_bucket_name }}/{{ object_key }} {{ local_state_file }}
         --region {{ s3_bucket_region }}
       register: s3_fetch_result
 
+    # Read the downloaded tfstate file
     - name: Read terraform.tfstate
       slurp:
         src: "{{ local_state_file }}"
       register: raw_tfstate
 
+    # Decode and parse the JSON content of the tfstate
     - name: Parse tfstate JSON
       ansible.builtin.set_fact:
         tfstate: "{{ raw_tfstate.content | b64decode | from_json }}"
 
+    # Extract all EC2 instances that have a Name tag
     - name: Extract EC2 instances with 'Name' tag
       set_fact:
         named_instances: >-
@@ -44,6 +48,7 @@
             | selectattr('tags.Name', 'defined')
           }}
 
+    # Write a dynamic inventory file based on the extracted EC2 instance info
     - name: Write inventory.ini file for Ansible
       copy:
         dest: "{{ inventory_path }}"
@@ -52,7 +57,8 @@
           {% for inst in named_instances %}
           {{ inst.tags.Name | replace(' ', '_') }} ansible_host={{ inst.public_ip }} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           {% endfor %}
- 
+
+    # Extract the RDS resource block for the 'postgres' instance
     - name: Get RDS resource dictionary for aws_db_instance.postgres
       set_fact:
         postgres_resource: >-
@@ -61,7 +67,7 @@
              | selectattr('name', 'equalto', 'postgres')
              | list | first }}
 
-  
+    # Extract database credentials and connection details
     - name: Extract postgres hostname
       set_fact:
         db_host: "{{ postgres_resource.instances[0].attributes.address }}"
@@ -69,8 +75,9 @@
         db_port: "{{ postgres_resource.instances[0].attributes.port }}"
         db_user: "{{ postgres_resource.instances[0].attributes.username }}"
         db_password: "{{ postgres_resource.instances[0].attributes.password }}"
-      no_log: true #to ensure db_password is not printed on the console
-        
+      no_log: true  # Hide sensitive credentials from logs
+
+    # Create a 'cars' table in the PostgreSQL database if it doesn't already exist
     - name: Create cars table
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
@@ -87,6 +94,7 @@
           );
       no_log: true
 
+    # Insert sample car records into the 'cars' table
     - name: Insert car data
       community.postgresql.postgresql_query:
         db: "{{ db_name }}"
@@ -99,4 +107,4 @@
           ('Toyota', 'Corolla', 2020),
           ('Honda', 'Civic', 2019),
           ('Ford', 'Mustang', 2021);
-      no_log: true    
+      no_log: true
