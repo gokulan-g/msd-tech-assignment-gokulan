@@ -56,14 +56,6 @@ jobs:
           fi
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-          
-      # - name: Run Terraform Apply or Destroy
-      #   working-directory: ./terraform
-      #   run: |
-      #     endpoint=$(terraform state show aws_db_instance.postgres | grep -v listener| grep -i endpoint)
-      #     endpoint=$(echo "$endpoint" | awk -F'"' '{print $2}' | awk -F':' '{print $1}')
-      #     echo "db_host=$endpoint" >> "$GITHUB_OUTPUT"
-      #     echo $db_host
 
       - name: Commit terraform state to repo
         run: |
@@ -83,12 +75,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
-      # - name: Pull latest changes from main branch
-      #   run: |
-      #     git config --global user.email "actions@github.com"
-      #     git config --global user.name "GitHub Actions"
-      #     git pull origin main
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -99,7 +85,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y ansible
-          sudo apt install -y python3-psycopg2
+          #sudo apt install -y python3-psycopg2
           ansible-galaxy collection install community.postgresql
 
       - name: Install dependencies
@@ -119,12 +105,12 @@ jobs:
           aws-region: ap-south-1
 
       - name: Run Ansible Playbook - create inventories.ini file
-        run: ansible-playbook ansible/main.yml --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
+        run: ansible-playbook ansible/main.yml
           
       - name: Run Ansible Playbook - install webservers from inventories.ini file
         run: |
           ansible-playbook ansible/configure_webservers.yml -i ansible/inventories.ini \
-            --private-key ~/.ssh/msd_assignment_key.pem --extra-vars "db_password=${{ secrets.DB_PASSWORD }}"
+            --private-key ~/.ssh/msd_assignment_key.pem
 
       - name: Commit Ansible output (if any)
         run: |
