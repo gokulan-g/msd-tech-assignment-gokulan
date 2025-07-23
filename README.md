@@ -1,76 +1,115 @@
-# Infrastructure Automation Assignment
+# Webserver as Code
 
-## 📘 Overview
+## Continuous Deployment (GitHub Actions)
 
-This project automates the provisioning and configuration of a web infrastructure stack using **Terraform**, **Ansible**, and **GitHub Actions** on **AWS**. It deploys a high-availability setup with a PostgreSQL database and dynamic content rendered from the database on NGINX web servers.
+This project uses GitHub Actions to automate provisioning and configuration. The pipeline is triggered manually using `workflow_dispatch` and supports `apply` or `destroy` actions via input.
 
----
+### Workflow Summary
 
-## 🏗️ Infrastructure Provisioning (Terraform)
+- **Secure AWS access** using OIDC role `msd-tech-assignment-aws-role`
+- `workflow_dispatch` trigger with input selection (`apply` or `destroy`)
+- **Secrets** like `DB_PASSWORD` and `SSH_PRIVATE_KEY` managed via GitHub Secrets
+- Two-phase execution:
+  - **Infra-As-Code**: Runs Terraform
+  - **Config-As-Code**: Runs Ansible (only during `apply`)
 
-* **EC2 Instances**
+### Terraform Phase
 
-  * 2 x Ubuntu EC2 instances
-  * Distributed across `ap-south-1a` and `ap-south-1b`
-  * Connected via an Application Load Balancer (ALB)
+- Initializes Terraform and applies or destroys resources
+- State is committed back to the repository
+- Generates output for EC2 IPs and RDS endpoints
 
-* **PostgreSQL RDS**
+### Ansible Phase (applies only when action is `apply`)
 
-  * Free Tier instance
-  * Security group `connect-to-rds` allows port `5432` in/out
-  * Publicly accessible for demo purposes
+- Installs Ansible and required collections
+- Saves SSH private key from GitHub Secrets
+- Parses Terraform state to generate `inventories.ini`
+- Executes playbooks to:
+  - Install NGINX
+  - Create and populate PostgreSQL table
+  - Render dynamic content
 
-* **ALB (Application Load Balancer)**
+### Example Trigger Block
 
-  * Targets both EC2 instances
-  * Sticky sessions disabled (`lb_cookie`)
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      terraform_action:
+        description: 'Select Terraform Action'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+```
 
-* **Route 53 DNS**
+### Notes
 
-  * `A` record pointing to ALB (`gokulang.com`)
-
----
-
-## ⚙️ Configuration Management (Ansible)
-
-### 🖥️ Localhost Tasks
-
-* Parse `terraform.tfstate` to generate dynamic inventory
-* Extract RDS endpoint
-* Create and populate PostgreSQL table `cars`
-
-### 🌐 Webserver Tasks
-
-* Install and configure NGINX
-* Render dynamic `index.html` containing:
-
-  * Hostname of EC2
-  * Data from PostgreSQL (`cars` table)
-* NGINX watchdog cron job to ensure service uptime
-
----
-
-## 🔄 Continuous Deployment (GitHub Actions)
-
-* Secure role-based access to AWS using OIDC (`msd-tech-assignment-aws-role`)
-* `workflow_dispatch` to trigger `apply` or `destroy`
-* Terraform plan/apply integrated with GitHub Secrets
-* Inventory file is regenerated after provisioning
+- Ansible is skipped when `terraform_action == destroy`
+- Sensitive credentials are masked in logs
+- SSH key is handled in-memory and not written to disk outside GitHub runner
 
 ---
 
-## 🔐 Security & Best Practices
+## Overview
 
-* SSH key permissions validated
-* DB passwords injected using GitHub Secrets
-* No hardcoded secrets in Ansible or Terraform
-* Python interpreter explicitly set for compatibility
+This project automates the provisioning and configuration of a web infrastructure stack using Terraform, Ansible, and GitHub Actions on AWS. It deploys a high-availability setup with a PostgreSQL database and dynamically generates Ansible inventory and content rendered on NGINX web servers.
 
 ---
 
-## 🌐 Dynamic Web Content Sample
+## Infrastructure Provisioning (Terraform)
 
-Example content of `index.html` rendered by each server:
+- **EC2 Instances**
+  - 2 x Ubuntu EC2 instances
+  - Distributed across `ap-south-1a` and `ap-south-1b`
+  - Connected via an Application Load Balancer (ALB)
+
+- **PostgreSQL RDS**
+  - Free Tier instance
+  - Security group `connect-to-rds` allows port `5432` in/out
+  - Publicly accessible for demo purposes
+
+- **ALB (Application Load Balancer)**
+  - Targets both EC2 instances
+  - Sticky sessions disabled (`lb_cookie`)
+
+- **Route 53 DNS**
+  - `A` record pointing to ALB (`gokulang.com`)
+
+---
+
+## Configuration Management (Ansible)
+
+### Localhost Tasks
+
+- Download `terraform.tfstate` from S3
+- Parse `terraform.tfstate` to generate dynamic inventory (`inventories.ini`)
+- Extract RDS connection details (hostname, port, user, password)
+- Create PostgreSQL table `cars` using `community.postgresql.postgresql_query`
+- Insert seed records into the `cars` table
+
+### Webserver Tasks
+
+- Install and configure NGINX
+- Render dynamic `index.html` using EC2 hostname and DB table `cars` data
+- Add a cron-based watchdog to auto-restart NGINX if stopped
+
+---
+
+## Security and Best Practices
+
+- SSH key permissions are enforced
+- DB passwords and secrets are never hardcoded and used in hit
+- All sensitive variables are marked with `no_log: true` in Ansible
+- Python interpreter explicitly declared for controlled environments
+
+---
+
+## Dynamic Web Content Sample
+
+Example of `index.html` rendered on each server:
 
 ```html
 <table>
@@ -87,19 +126,18 @@ Example content of `index.html` rendered by each server:
 
 ---
 
-## 🧪 Validations Performed
+## Validations Performed
 
-* Verified SSH access to EC2 instances
-* Verified load balancing across two AZs
-* Verified PostgreSQL data read and insert
-* Confirmed HTML rendering and NGINX service watchdog
-
----
-
-## 📅 Release Info
-
-* **Version:** 1.0.0
-* **Author:** Gokulan Guberan
-* **Date:** July 20, 2025
+- Verified SSH access to EC2 instances
+- Verified load balancing across two AZs
+- Verified PostgreSQL connectivity and data manipulation via Ansible
+- Validated dynamic inventory generation from Terraform state
+- Confirmed `cars` table was created and populated correctly
 
 ---
+
+## Release Info
+
+- Version: 1.0.0
+- Author: Gokulan Guberan
+- Date: July 23, 2025
