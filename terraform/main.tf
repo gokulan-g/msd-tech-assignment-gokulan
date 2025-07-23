@@ -128,10 +128,10 @@ resource "aws_security_group" "ssh_access" {
 }
 
 resource "aws_instance" "ubuntu_server" {
-  count         = 2
+  count         = var.instance_count
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  key_name      = "msd_assignment_key"
+  instance_type = var.ec2_instance_type
+  key_name      = var.ec2_instance_private_key
 
   subnet_id              = element(data.aws_subnets.filtered_subnets.ids, count.index)
   vpc_security_group_ids = [aws_security_group.ssh_access.id]
