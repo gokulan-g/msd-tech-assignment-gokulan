@@ -23,3 +23,9 @@ variable "application_load_balancer_name" {
     description = "Application Load Balacer Name"
     type = string
 }
+
+
+variable "server_name" {
+    description = "EC2 instance name"
+    type = string
+}
